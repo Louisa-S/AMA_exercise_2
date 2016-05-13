@@ -2,9 +2,9 @@ import sys
 import string as pstring
 
 string = sys.argv[1]
-
+string = string.lower()
 string += "$"
-string.lower()
+
 
 sortedstring = sorted(string)
 
@@ -45,7 +45,6 @@ for i in range (len(types)):
 		lms.append(i+1)
 	i += 1
 		
-print lms
 
 lmsstring = []
 
@@ -57,21 +56,18 @@ for i in range(len(lms)-1):
 
 lmsstring.append(string[lms[-1]])
 
-print lmsstring
 
 #sorting the substrings	
 lmssort = []
 for i in range(len(lms)):
 	lmssort.append((lms[i], lmsstring[i]))
 	
-print lmssort
 
 def getkey(item):
 	return item[1]
 
 sort = sorted(lmssort, key = getkey)
 
-print sort
 
 #suffix array of the lms positions
 suffixarray = []
@@ -79,11 +75,11 @@ suffixarray = []
 for i in sort:
 	suffixarray.append(i[0])
 
+print "Suffix array of the LMS positions:"
 print suffixarray
 
 #replace each lms substring by a symbol
 alpha = list(pstring.ascii_uppercase)
-print alpha
 
 sym = dict()
 i = 0
@@ -95,14 +91,12 @@ for s in sort:
 			sym[s[1]] = alpha[i]
 			i += 1
 
-print sym
-
 seq = []
 
 #sequencq s' contain symbols fot the lms substrings
 for s in lmsstring:
 	seq.append(sym[s])
-print seq		
+		
 
 
 #preparing the suffix array
@@ -126,9 +120,22 @@ for i in range(len(sortedstring)):
 				pg = i
 			else:
 				pt = i
-print p0, pa, pc, pg, pt
 
-#posittions of lms positions in respective buckets
+#start positions of the buckets
+sa = p0+1
+sc = pa+1
+sg = pc+1
+st = pg+1
+
+#original end positions
+ea = pa
+ec = pc
+eg = pg
+et = pt
+
+
+#positions of lms positions in respective buckets
+#if two strings are the same, the sorting could be different
 for sub in sort[::-1]:
 	if sub[1][0] == "a":
 		pos[pa] = sub[0]
@@ -148,6 +155,81 @@ for sub in sort[::-1]:
 				else:
 					pos[p0] = sub[0]
 
-print pos
+
  
-	
+#sorting the L-positions
+for r in rank:
+	if pos[r] == -1:
+		continue
+	else:
+		if pos[r]-1 in lpos:
+			if string[pos[r]-1] == "a":
+				pos[sa] = pos[r]-1
+				sa += 1
+			else:
+				if string[pos[r]-1] == "c":
+					pos[sc] = pos[r]-1
+					sc += 1
+				else:
+					if string[pos[r]-1] == "g":
+						pos[sg] = pos[r]-1
+						sg += 1
+					else:
+						if string[pos[r]-1] == "t":
+							pos[st] = pos[r]-1
+							st += 1
+		else:
+			continue
+
+
+#only the l positions
+for r in rank:
+	if pos[r] == -1:
+		continue
+	if pos[r] not in lpos:
+		if r == 0:
+			p0 = 0
+		else:
+			if r <= ea:
+				pa += 1
+			else:
+				if r <= ec:
+					pc += 1
+				else:
+					if r <= eg:
+						pg += 1
+					else:
+						pt += 1
+		pos[r] = -1
+
+print "pos after sorting of L-positions:"
+print pos
+
+#sorting the S-positions 
+for r in rank[::-1]:
+	if r == 0:
+		pos[0] = len(string)-1
+	if pos[r] == -1:
+		continue
+	else:
+		if pos[r]-1 in spos:
+			if string[pos[r]-1] == "a":
+				pos[pa] = pos[r]-1
+				pa -= 1
+			else:
+				if string[pos[r]-1] == "c":
+					pos[pc] = pos[r]-1
+					pc -= 1
+				else:
+					if string[pos[r]-1] == "g":
+						pos[pg] = pos[r]-1
+						pg -= 1
+					else:
+						if string[pos[r]-1] == "t":
+							pos[pt] = pos[r]-1
+							pt -= 1
+		else:
+			continue
+
+print "final pos:"
+print pos
