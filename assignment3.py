@@ -70,10 +70,10 @@ def extractLMSStrings(S, lmspos):
 # map each LMS position to its substring in the sequence by a pair (pos, substr) and add it to a list, which is returned
 def mapLMSPositionsToStrings(lmspos, lmsstrings):
 	lmsmap = []
-	print lmspos
-	print len(lmspos)
-	print lmsstrings
-	print len(lmsstrings)
+	#print lmspos	# for debugging purposes
+	#print len(lmspos)	# for debugging purposes
+	#print lmsstrings	# for debugging purposes
+	#print len(lmsstrings)	# for debugging purposes
 	for i in range(len(lmspos)):
 		lmsmap.append((lmspos[i], lmsstrings[i]))
 	
@@ -116,7 +116,8 @@ def sortSPositions(S, typearray, buckets, pos):
 				bucketend = buckets[charindex]
 				pos[bucketend] = altpos
 				buckets[charindex] -= 1		
-		i -= 1	
+		i -= 1
+	pos[0] = len(S)-1	
 
 # Removes all S-Positions to prepare pos array for S-Position sorting. Also updates the bucketpointers.			
 def removeSPositions(S, typearray, buckets, pos):
@@ -135,26 +136,40 @@ def sort(pair):
 # Runs the Sorting Algorihm Induced Sorting
 def SA_IS(S, pos):
 	typearray = computeTypeArray(S)
-	print typearray
+	#print typearray	# for debugging purposes
+	
 	lmspos = computeLMSPositions(typearray)
 	lmsstrings = extractLMSStrings(S, lmspos)
 	lmsmap = mapLMSPositionsToStrings(lmspos, lmsstrings)
 	lmsmap = sorted(lmsmap, key=lambda x: x[1])
+	
 	buckets = initializeBucketPointers(S)
-	print lmsmap
-	print buckets
+	#print lmsmap	# for debugging purposes
+	#print buckets	# for debugging purposes
+	
 	fillPositionsInBuckets(lmsmap, buckets, pos)
-	print pos
-	print 'Sorting L-positions'
+	print 'Suffix array of the LMS positions :'
+	SAlms = [i[0] for i in  lmsmap]
+	print SAlms
+	print '\n'
+	
+	#print 'Sorting L-positions'	# for debugging purposes
 	sortLPositions(S, typearray, buckets, pos)
+	print 'pos after sorting of L-positions :'
 	print pos
-	pos_copy = list(pos)
-	print 'Removing S-positions'
-	removeSPositions(S, typearray, buckets, pos_copy)
-	print pos_copy
-	print 'Sorting S-Positions'
-	sortSPositions(S, typearray, buckets, pos_copy)
-	print pos_copy
+	print'\n'
+	
+	final_pos = list(pos)
+	#print 'Removing S-positions'	# for debugging purposes
+	removeSPositions(S, typearray, buckets, final_pos)
+	
+	#print pos_copy	# for debugging purposes
+	#print 'Sorting S-Positions'	# for debugging purposes
+	sortSPositions(S, typearray, buckets, final_pos)
+	print 'final pos :'
+	print final_pos
+	
+	return 0
 
 ####
 #	Assignment 2, Task 3
@@ -164,11 +179,11 @@ def SA_IS(S, pos):
 
 # Read arguments
 args = sys.argv
-print args
 
-S = readInputFile(args[1])
-S = S + '$'
-print S
+#S = readInputFile(args[1]) # turn this on if you like to have an input file rather than putting the sequence in the cmdline, also turn next line off
+S = args[1]
+if not S.endswith('$'):
+	S = S + '$'
 
 # Prepare pos array, initialized with -1 for each position in the string S
 pos = []
